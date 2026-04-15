@@ -1,0 +1,15 @@
+# Entornos virtuales (NUNCA se suben)
+venv/
+
+# Caché de Python
+__pycache__/
+
+
+# Herramientas de análisis (Linters)
+.mypy_cache/
+.pytest_cache/
+
+# Todos los .txt excepto config.txt
+*.txt
+!config.txt
+!requirements.txt

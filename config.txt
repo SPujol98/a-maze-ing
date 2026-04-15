@@ -1,0 +1,19 @@
+WIDTH=20
+HEIGHT=20
+ENTRY=   0  ,0
+EXIT=15, 4   
+OUTPUT_FILE=output.txt
+PERFECT=yes
+#SEED=1
+
+
+
+
+
+
+
+
+
+
+
+
