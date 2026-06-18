@@ -1,43 +1,77 @@
-*This project has been created as part of the 42 curriculum by spujol-s, esucarra*
+# A-Maze-ing — Maze Generator & Solver
 
-# A-Maze-ing
+A configurable maze generation and solving tool built in Python, with an interactive terminal interface and a reusable `mazegen` package.
 
-## Description
+*Built at 42 Barcelona by [@spujol-s](https://github.com/spujol-s) and [@esucarra](https://github.com/esucarra)*
 
-A-Maze-ing is a visual Python maze generator and solver.
+![demo](assets/demo.gif)
 
-Project goals:
-- Generate a valid maze from a configuration file (config.txt).
-- Support perfect and imperfect mazes.
-- Save the generated maze information using a hexadecimal base and the solution path.
-- Provide interactive terminal controls (regenerate, show/hide path, color rotation, theme gambling).
+---
 
-Current implementation:
-- Main Python script: a_maze_ing.py.
-- Config parsing and validation: create_config.py (validated with Pydantic).
-- Reusable maze logic class: package/mazegen.py (MazeGenerator).
-- Maze visualization: maze_display.py
+## Overview
 
-## Instructions
+A-Maze-ing generates valid mazes from a config file, computes the shortest path from entry to exit using BFS, and renders everything in the terminal with full color support and interactive controls. The maze structure is also exported to a hexadecimal file for external validation.
+
+The core generation logic is packaged as a standalone `mazegen` Python package, so it can be reused independently of the UI.
+
+---
+
+## Visuals
+
+<table>
+  <tr>
+    <th>Default theme</th>
+    <th>Random color theme</th>
+  </tr>
+  <tr>
+    <td><img src="assets/maze_default.png" width="100%"></td>
+    <td><img src="assets/maze_colors.png" width="100%"></td>
+  </tr>
+</table>
+
+The "42" pattern is embedded in every maze large enough to fit it — rendered in a contrasting color relative to the active theme.
+
+---
+
+## Features
+
+- **Maze generation** via recursive backtracking (iterative with a stack)
+- **Perfect and imperfect mazes** — imperfect mode removes dead-end walls randomly to create multiple valid paths
+- **BFS pathfinding** — guaranteed shortest path from entry to exit
+- **Reproducible generation** via optional `SEED` parameter
+- **Interactive terminal controls** — no restart needed to explore options
+- **Color themes** — rotate through predefined themes or trigger a random animated theme change
+- **Hexadecimal export** — maze structure encoded as bit flags (N/E/S/W per cell)
+- **Reusable `mazegen` package** — core logic decoupled from the UI
+
+---
+
+## Interactive Controls
+
+```
+=== A-Maze-ing ===
+1. Re-generate a new maze
+2. Show/Hide path from entry to exit
+3. Rotate maze colors
+4. Theme gambling
+5. Quit
+```
+
+The terminal clears and redraws cleanly on every interaction — no output stacking.
+
+---
+
+## Installation & Usage
 
 ### Requirements
 
 - Python 3.10+
-- make
+- `make`
 
 ### Install
 
 ```bash
 make install
-```
-
-This command creates `venv` if needed, upgrades pip, and installs the project dependencies from `requirements.txt`.
-
-### Lint
-
-```bash
-make lint
-make lint-strict
 ```
 
 ### Run
@@ -46,194 +80,105 @@ make lint-strict
 make run
 ```
 
-Equivalent:
+Or manually:
 
 ```bash
 python3 a_maze_ing.py config.txt
 ```
 
-### Debug
+### Other targets
 
 ```bash
-make debug
+make lint         # flake8 + mypy
+make lint-strict  # flake8 + mypy --strict
+make debug        # run with pdb
+make clean        # remove venv, caches
 ```
 
-### Clean
+---
 
-```bash
-make clean
+## Configuration
+
+Edit `config.txt` before running:
+
 ```
-
-## Configuration File Format
-
-The configuration file uses one KEY=VALUE per line.
-Lines starting with # are ignored.
-
-Mandatory keys:
-- WIDTH: maze width in cells (int, >1 and <999)
-- HEIGHT: maze height in cells (int, >1 and <999)
-- ENTRY: entry coordinates (x,y)
-- EXIT: exit coordinates (x,y)
-- OUTPUT_FILE: output file name ending in .txt (filename only, no path)
-- PERFECT: boolean (true/false, yes/no, on/off, 1/0)
-
-Optional keys:
-- SEED: integer seed for reproducible generation
-
-Default config example:
-
-```txt
-WIDTH=15
-HEIGHT=15
+WIDTH=40
+HEIGHT=30
 ENTRY=0,0
-EXIT=12,14
+EXIT=38,28
 OUTPUT_FILE=output.txt
 PERFECT=no
-#SEED=874013
+#SEED=293697
 ```
 
-## Maze Generation Algorithm
+| Key | Description |
+|:---|:---|
+| `WIDTH` / `HEIGHT` | Maze dimensions (int, 1 < x < 999) |
+| `ENTRY` / `EXIT` | Coordinates as `x,y` |
+| `OUTPUT_FILE` | Output filename (`.txt`) |
+| `PERFECT` | `true/false` — single path vs multiple paths |
+| `SEED` | Optional integer for reproducible generation |
 
-Chosen algorithm:
-- Recursive backtracking, implemented iteratively with a stack.
+---
 
-Why this algorithm:
-- Simple and reliable for generating good-looking mazes.
-- Naturally produces perfect mazes (single path between two cells) when no extra walls are removed.
-- Easy to extend to an imperfect maze.
+## Algorithm
 
-Imperfect mode:
-- After generating a perfect maze, dead-end walls are removed randomly to create additional paths.
+**Generation** — recursive backtracking implemented iteratively with a stack. Produces perfect mazes by default (one unique path between any two cells). In imperfect mode, dead-end walls are removed randomly after generation to introduce loops.
 
-Pathfinding:
-- Breadth-first search (BFS) is used to compute a shortest valid path from ENTRY to EXIT.
+**Pathfinding** — BFS guarantees the shortest valid path from `ENTRY` to `EXIT`. The path is stored as a sequence of N/E/S/W directions and overlaid on the maze display when enabled.
 
-## Maze Requirements Coverage
+**Output encoding** — each cell is stored as a single hex digit where bits 0–3 represent walls (North, East, South, West). A closed wall = 1, open = 0.
 
-Implemented:
-- Can be reproducible via SEED or use a randomized seed.
-- Entry/exit validation.
-- Visible "42" pattern when the size allows it.
+---
 
-Behavior for small mazes:
-- If the maze is too small for the "42" pattern, the program prints a message.
+## Project Structure
 
-## Output File Format
+```
+A-Maze-ing/
+├── a_maze_ing.py       # Entry point and main loop
+├── create_config.py    # Config parsing and Pydantic validation
+├── maze_display.py     # Terminal renderer and color themes
+├── package/
+│   └── mazegen.py      # MazeGenerator class (reusable)
+├── config.txt
+├── Makefile
+├── pyproject.toml
+└── requirements.txt
+```
 
-Each cell is encoded as one hexadecimal digit where wall bits are:
-- bit 0: North
-- bit 1: East
-- bit 2: South
-- bit 3: West
+---
 
-File structure:
-1. Maze rows in hex (one row per line).
-2. One empty line.
-3. ENTRY coordinates: x,y
-4. EXIT coordinates: x,y
-5. Shortest path string using N/E/S/W
+## mazegen Package
 
-All lines end with \n.
+The core generation logic is available as a standalone package:
 
-## Visual Representation
-
-This project provides terminal rendering.
-
-Interactive options:
-- Regenerate maze
-- Show/Hide shortest path
-- Rotate maze color theme
-- Get a random color theme with an animation
-- Quit
-
-## Reusability
-
-Reusable component:
-- MazeGenerator class in package/mazegen.py
-
-First the mazegen...tar needs to be installed with pip install.
-
-Then it can be used with:
+```bash
+pip install mazegen-1.0.0.tar.gz
+```
 
 ```python
 from mazegen import MazeGenerator
-```
 
-Example usage:
-
-```python
-maze = MazeGenerator(width=20, height=15, perfect=True, seed_number=1234)
+maze = MazeGenerator(width=20, height=15, perfect=True, seed_number=42)
 maze.sign_42()
 maze.generate()
+path = maze.solve_bfs(start=(0, 0), end=(19, 14))
+coords = maze.get_path_coords(start=(0, 0), path_str=path)
 ```
 
-What can also be reused:
-- BFS path computation.
-- Path coordinates extraction.
-- File export in project format.
+---
 
-Parameters for all mazes:
-- `width` and `height` define maze size.
-- `perfect` toggles perfect vs imperfect generation.
-- `seed_number` fixes the random seed for reproducible output.
+## Team
 
-Functions with more parameters (entry, exit):
-- `maze.solve_bfs(start, end)` returns the shortest valid path as a string.
-- `maze.get_path_coords(start, path_str)` converts a solution into visited coordinates.
+| | Contribution |
+|:---|:---|
+| **@spujol-s** | Config parsing and Pydantic validation, interactive terminal UI, main loop logic, show/hide path, color rotation, regenerate, seed implementation, path rendering in `maze_display.py`, BFS improvements for path display, Makefile, mazegen package (joint) |
+| **@esucarra** | Original config parser, maze generation algorithm, BFS base implementation, hexadecimal file export, visual improvements in `maze_display.py`, mazegen package (joint) |
 
-## Team and Project Management
-
-Team members:
-- spujol-s
-- esucarra
-
-Roles:
-- Both members contributed to algorithm, implementation, testing, and project setup,
-    and worked together for the most part.
-
-Planned workflow:
-1. Define config format and data validation first.
-2. Implement generation and file output second.
-3. Add rendering and interactive controls third.
-4. Make the packaging and reusability possible.
-5. Check for general errors in the code.
-
-How it evolved:
-- It evolved quickly, brick by brick, and before we realized it, everything was finished.
-
-What worked well:
-- Doing each step of the project properly before moving to the next one.
-
-What could be improved:
-- More organized code in some aspects.
-- Expand documentation with example screenshots.
-
-Tools used:
-- Python 3.10+
-- Pydantic
-- flake8
-- mypy
-- make
-- venv
-- build
+---
 
 ## Resources
 
-Basic resources:
-- Pydantic: learned by doing module 09 of the Python modules.
-- BFS and recursive backtracking: videos from the internet and some colleagues that helped us understand.
-
-AI usage in this project:
-- Used AI for repetitive writing and formatting tasks, for example changing a variable name everywhere quickly.
-- Used AI to review the code after our own verification.
-- All generated content was manually reviewed, adapted, and validated before use.
-
-## Repository Structure
-
-- a_maze_ing.py
-- create_config.py
-- package/mazegen.py
-- package/README.md: documentation
-- config.txt
-- Makefile: install/run/debug/lint/clean
-- pyproject.toml: to create the reusable module
+- [Breadth-First Search — Wikipedia](https://en.wikipedia.org/wiki/Breadth-first_search)
+- [Recursive Backtracker — Maze Generation](https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search)
+- [Pydantic Documentation](https://docs.pydantic.dev/)
