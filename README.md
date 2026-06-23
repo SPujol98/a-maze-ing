@@ -4,15 +4,17 @@ A configurable maze generation and solving tool built in Python, with an interac
 
 *Built at 42 Barcelona by [@spujol-s](https://github.com/spujol-s) and [@esucarra](https://github.com/esucarra)*
 
+![Score](https://img.shields.io/badge/Score-118%2F100-brightgreen)
+
 ![demo](assets/demo.gif)
 
 ---
 
 ## Overview
 
-A-Maze-ing generates valid mazes from a config file, computes the shortest path from entry to exit using BFS, and renders everything in the terminal with full color support and interactive controls. The maze structure is also exported to a hexadecimal file for external validation.
+Give it a width, height, and an entry/exit point, and it builds a maze, finds the shortest path through it with BFS, and renders it in the terminal — in color, with live controls to regenerate, toggle the path, or cycle themes without restarting. The maze structure also exports to a hexadecimal file for external validation.
 
-The core generation logic is packaged as a standalone `mazegen` Python package, so it can be reused independently of the UI.
+The generation logic itself lives in a standalone `mazegen` package, separate from the terminal UI, so it can be reused on its own.
 
 ---
 
@@ -29,7 +31,7 @@ The core generation logic is packaged as a standalone `mazegen` Python package, 
   </tr>
 </table>
 
-The "42" pattern is embedded in every maze large enough to fit it — rendered in a contrasting color relative to the active theme.
+Any maze large enough to fit it gets a hidden "42" worked into the layout, in a color that contrasts against the active theme.
 
 ---
 
